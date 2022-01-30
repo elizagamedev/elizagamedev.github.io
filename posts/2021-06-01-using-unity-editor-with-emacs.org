@@ -1,0 +1,106 @@
+#+title: Using Unity Editor with Emacs
+#+date: <2021-06-01 Tue>
+#+description: How to configure the Unity game engine editor to integrate with Emacs
+#+filetags: unity emacs
+
+Let's skip right to the core of the issue: Unity is designed with the
+expectation that you are using Visual Studio or Visual Studio Code for editing
+C#, and using alternative editors with features such as LSP gets a bit tricky.
+Fortunately, with a lot (a /lot/) of trial and error, I've found a way to
+configure the two in a way that /exceeded/ my expectations in how featureful and
+pleasant of an experience it is to write code for Unity in Emacs.
+
+An alternate title for this article could also be "Using Unity Editor with LSP
+on a non-Windows OS", since a great portion of my difficulty involved figuring
+out the idiosyncrasies of running OmniSharp on Linux. This guide still applies
+to Windows, though.
+
+* Foreground: What's LSP/OmniSharp?
+In short: LSP (Language Server Protocol) provides almost all of the features you
+could ever want from an IDE in any code editor which supports the protocol.
+OmniSharp is such a server for C#, and a very powerful one at that. We will go
+in depth about how to configure OmniSharp to work with Emacs later.
+
+* Configuring Unity to Open Emacs
+The most obvious place to start is configuring Unity to open Emacs as its
+external editor. Unfortunately, things aren't so simple, due to a bizarre quirk.
+Unity automatically generates and maintains solution and project files, but
+/only/ if the external editor is configured to be Visual Studio, Visual Studio
+Code, or MonoDevelop, despite the fact that theoretically any number of text
+editors can benefit from OmniSharp.
+
+The [[https://github.com/elizagamedev/unity.el][=unity.el=]] package provides a workaround to this issue by providing an
+executable named =code= which tricks Unity into always generating the
+solution/project files. =code= accepts the command line for the actual program
+you wish to run as its arguments. To start =emacsclient=, my "External Script
+Editor Args" field is set to the following:
+
+#+begin_src shell
+  emacsclient -n +$(Line):$(Column) $(File)
+#+end_src
+
+The package also provides some additional quality-of-life features for
+interacting with Unity; see the GitHub page for more info on installation and
+configuring.
+
+For performance reasons, I would also recommend disabling every option for
+"Generate =.csproj= files". OmniSharp will eagerly try to resolve each and every
+Unity package, which is usually not necessary.
+
+At this point, Unity will now generate the initial solution/project files when
+you click "Regenerate project files" or when you open a C# source file via
+Unity. You only need to do this once; Unity will automatically keep them
+maintained.
+
+* Configuring Emacs to use LSP with OmniSharp
+** Prerequisite: (Linux, macOS) Install and Configure Mono
+The Windows version of Unity will automatically install Visual Studio, which
+provides all of the crunchy bits that make OmniSharp work out of the box.
+Unfortunately, on other platforms, we have a bit of setup to do. The short
+version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
+not come with a complete set of core assemblies for .NET, so we have to install
+those ourselves.
+
+I recommend using the official Mono releases instead of relying on your
+distribution's package manager if possible. Luckily, it's quite easy to do so
+via the [[https://www.mono-project.com/download/stable/][Mono download page]].
+
+Once it's installed, we need to indicate to OmniSharp's =mono= invocation where
+these newly installed assemblies can be found, via an environment variable. This
+lifesaving piece of advice was provided by GitHub user R0flcopt3r [[https://github.com/OmniSharp/omnisharp-roslyn/issues/1948#issuecomment-694869256][here]]. I simply
+set it in my =init.el=.
+
+#+begin_src emacs-lisp
+  (setenv "FrameworkPathOverride" "/lib/mono/4.5")
+#+end_src
+
+(The path on macOS is likely different, but I'm not certain.)
+
+** Configuring =csharp-mode= and =lsp-mode=
+The actual elisp configuration is shockingly simple. (Note: I rely on use
+[[https://github.com/jwiegley/use-package][use-package]] here.)
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :bind-keymap
+    ("C-c l" . lsp-command-map)
+    :custom
+    (lsp-keymap-prefix "C-c l"))
+
+  (use-package csharp-mode
+    :ensure t
+    :init
+    (defun my/csharp-mode-hook ()
+      (setq-local lsp-auto-guess-root t)
+      (lsp))
+    (add-hook 'csharp-mode-hook #'my/csharp-mode-hook))
+#+end_src
+
+And... that's it, really. There are a lot more awesome options to configure
+=lsp-mode=, and I recommend exploring them if you haven't already.
+
+* Other Considerations
+=lsp-mode= gains a massive performance boost if Emacs is built with native JSON
+serialization and native elisp compilation. See [[https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation][this article]] for more details. I
+/highly/ recommend giving it a try.

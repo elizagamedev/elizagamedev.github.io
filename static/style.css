@@ -1,0 +1,156 @@
+/* This color scheme is based on Modus Vivendi. */
+
+body {
+  font-family: sans-serif;
+  background-color: #000000;
+  font-size: 13pt;
+  margin: 0;
+}
+
+#content {
+  display: block;
+  max-width: 40em;
+  margin: 0 auto;
+}
+
+/* Links. */
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: white;
+  text-decoration: inherit;
+  background: #10387c; /* blue-subtle-bg */
+}
+
+p a,
+.header a,
+#archive a {
+  color: #00bcff; /* blue-alt-other */
+  text-decoration: underline;
+}
+
+p a:visited,
+.header a,
+#archive a:visited {
+  color: #b6a0ff; /* magenta-alt-other */
+}
+
+/* Before content. */
+.header {
+  font-size: 12pt;
+  font-family: monospace;
+  text-align: center;
+  margin: 0 0 1rem 0;
+}
+
+/* h1 is the article title. */
+h1 {
+  color: #feacd0; /* magenta */
+  font-weight: lighter;
+  font-size: 33pt;
+  margin: 0 0 1rem 0;
+}
+
+div.post-date {
+  color: #d2b580; /* yellow-faint */
+  font-family: monospace;
+  font-size: 12pt;
+}
+
+/* h2 is heading 1, etc. */
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: normal;
+  font-family: monospace;
+  margin: 2rem 0 1rem 0;
+}
+
+h2 {
+  color: #ffffff; /* fg-main */
+  font-size: 22pt;
+}
+
+h2::before {
+  content: "*";
+  margin: 0 0.5em 0 0;
+}
+
+h3 {
+  color: #f8dec0; /* fg-special-warm */
+  font-size: 17pt;
+}
+
+h3::before {
+  content: "**";
+  margin: 0 0.5em 0 0;
+}
+
+h4 {
+  color: #c6eaff; /* fg-special-cold */
+  font-size: 15pt;
+}
+
+h4::before {
+  content: "***";
+  margin: 0 0.5em 0 0;
+}
+
+h5 {
+  color: #bfebe0; /* fg-special-mild */
+  font-size: inherit;
+}
+
+h5::before {
+  content: "****";
+  margin: 0 0.5em 0 0;
+}
+
+h6 {
+  color: #fbd6f4; /* fg-special-calm */
+  font-size: 11pt;
+}
+
+h6::before {
+  content: "*****";
+  margin: 0 0.5em 0 0;
+}
+
+/* Text body. */
+p {
+  line-height: 1.7em;
+  color: #ffffff; /* fg-main */
+  margin: 0 0 1em 0;
+}
+
+p code {
+  font-family: monospace;
+  color: #fbd6f4; /* fg-special-calm */
+}
+
+pre {
+  font-size: 12pt;
+  font-family: monospace;
+  color: #ffffff; /* fg-main */
+  background-color: #191a1b; /* bg-alt */
+  margin: 1em 2em;
+}
+
+/* After content. */
+.taglist {
+  color: #a8a8a8; /* fg-alt */
+  font-size: 11pt;
+  font-family: monospace;
+  margin: 0 0 2em 0;
+}
+
+#archive {
+  font-size: 12pt;
+  font-family: monospace;
+  text-align: center;
+}
