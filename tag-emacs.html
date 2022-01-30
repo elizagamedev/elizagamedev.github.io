@@ -8,175 +8,25 @@
       title="RSS feed for https://eliza.sh/">
 <title>Eliza's Stuff</title>
 <meta name="author" content="Eliza Velasquez">
-<meta name="referrer" content="no-referrer">
-<link href= "static/style.css" rel="stylesheet" type="text/css" />
-<link rel="icon" href="static/favicon-96.png"></head>
+  <meta name="referrer" content="no-referrer">
+  <link href= "static/style.css" rel="stylesheet" type="text/css" />
+  <link rel="icon" href="static/favicon-96.png"></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-  <a href="https://eliza.sh">Eliza's Stuff</a>
-</div></div>
+    <a href="https://eliza.sh">Index</a>
+    <a href="https://eliza.sh/archive.html">Archive</a>
+    <a href="https://github.com/elizagamedev/">GitHub</a>
+    <a href="https://twitter.com/elizagamedev">Twitter</a>
+  </div></div>
 <div id="content">
-<h1 class="title">Posts tagged "emacs":</h1>
-<div class="post-date">01 Jun 2021</div><h1 class="post-title"><a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">Using Unity Editor with Emacs</a></h1>
-<p>
+<h1 class="title">Posts tagged "emacs":</h1><h2 class="post-title"><a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">Using Unity Editor with Emacs</a></h2><div class="post-date">01 Jun 2021</div><p>
 Let's skip right to the core of the issue: Unity is designed with the
 expectation that you are using Visual Studio or Visual Studio Code for editing
 C#, and using alternative editors with features such as LSP gets a bit tricky.
 Fortunately, with a lot (a <i>lot</i>) of trial and error, I've found a way to
 configure the two in a way that <i>exceeded</i> my expectations in how featureful and
 pleasant of an experience it is to write code for Unity in Emacs.
-</p>
-
-<p>
-An alternate title for this article could also be "Using Unity Editor with LSP
-on a non-Windows OS", since a great portion of my difficulty involved figuring
-out the idiosyncrasies of running OmniSharp on Linux. This guide still applies
-to Windows, though.
-</p>
-
-<div id="outline-container-org7fcc1fc" class="outline-2">
-<h2 id="org7fcc1fc">Foreground: What's LSP/OmniSharp?</h2>
-<div class="outline-text-2" id="text-org7fcc1fc">
-<p>
-In short: LSP (Language Server Protocol) provides almost all of the features you
-could ever want from an IDE in any code editor which supports the protocol.
-OmniSharp is such a server for C#, and a very powerful one at that. We will go
-in depth about how to configure OmniSharp to work with Emacs later.
-</p>
-</div>
-</div>
-
-<div id="outline-container-org5ba6863" class="outline-2">
-<h2 id="org5ba6863">Configuring Unity to Open Emacs</h2>
-<div class="outline-text-2" id="text-org5ba6863">
-<p>
-The most obvious place to start is configuring Unity to open Emacs as its
-external editor. Unfortunately, things aren't so simple, due to a bizarre quirk.
-Unity automatically generates and maintains solution and project files, but
-<i>only</i> if the external editor is configured to be Visual Studio, Visual Studio
-Code, or MonoDevelop, despite the fact that theoretically any number of text
-editors can benefit from OmniSharp.
-</p>
-
-<p>
-The <a href="https://github.com/elizagamedev/unity.el"><code>unity.el</code></a> package provides a workaround to this issue by providing an
-executable named <code>code</code> which tricks Unity into always generating the
-solution/project files. <code>code</code> accepts the command line for the actual program
-you wish to run as its arguments. To start <code>emacsclient</code>, my "External Script
-Editor Args" field is set to the following:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-shell">emacsclient -n +$(Line):$(Column) $(File)
-</pre>
-</div>
-
-<p>
-The package also provides some additional quality-of-life features for
-interacting with Unity; see the GitHub page for more info on installation and
-configuring.
-</p>
-
-<p>
-For performance reasons, I would also recommend disabling every option for
-"Generate <code>.csproj</code> files". OmniSharp will eagerly try to resolve each and every
-Unity package, which is usually not necessary.
-</p>
-
-<p>
-At this point, Unity will now generate the initial solution/project files when
-you click "Regenerate project files" or when you open a C# source file via
-Unity. You only need to do this once; Unity will automatically keep them
-maintained.
-</p>
-</div>
-</div>
-
-<div id="outline-container-orgde34075" class="outline-2">
-<h2 id="orgde34075">Configuring Emacs to use LSP with OmniSharp</h2>
-<div class="outline-text-2" id="text-orgde34075">
-</div>
-<div id="outline-container-orgc1c3c98" class="outline-3">
-<h3 id="orgc1c3c98">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
-<div class="outline-text-3" id="text-orgc1c3c98">
-<p>
-The Windows version of Unity will automatically install Visual Studio, which
-provides all of the crunchy bits that make OmniSharp work out of the box.
-Unfortunately, on other platforms, we have a bit of setup to do. The short
-version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
-not come with a complete set of core assemblies for .NET, so we have to install
-those ourselves.
-</p>
-
-<p>
-I recommend using the official Mono releases instead of relying on your
-distribution's package manager if possible. Luckily, it's quite easy to do so
-via the <a href="https://www.mono-project.com/download/stable/">Mono download page</a>.
-</p>
-
-<p>
-Once it's installed, we need to indicate to OmniSharp's <code>mono</code> invocation where
-these newly installed assemblies can be found, via an environment variable. This
-lifesaving piece of advice was provided by GitHub user R0flcopt3r <a href="https://github.com/OmniSharp/omnisharp-roslyn/issues/1948#issuecomment-694869256">here</a>. I simply
-set it in my <code>init.el</code>.
-</p>
-
-<div class="org-src-container">
-<pre class="src src-emacs-lisp">(setenv "FrameworkPathOverride" "/lib/mono/4.5")
-</pre>
-</div>
-
-<p>
-(The path on macOS is likely different, but I'm not certain.)
-</p>
-</div>
-</div>
-
-<div id="outline-container-orgd0bc789" class="outline-3">
-<h3 id="orgd0bc789">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
-<div class="outline-text-3" id="text-orgd0bc789">
-<p>
-The actual elisp configuration is shockingly simple. (Note: I rely on use
-<a href="https://github.com/jwiegley/use-package">use-package</a> here.)
-</p>
-
-<div class="org-src-container">
-<pre class="src src-emacs-lisp">(use-package lsp-mode
-  :ensure t
-  :bind-keymap
-  ("C-c l" . lsp-command-map)
-  :custom
-  (lsp-keymap-prefix "C-c l"))
-
-(use-package csharp-mode
-  :ensure t
-  :init
-  (defun my/csharp-mode-hook ()
-    (setq-local lsp-auto-guess-root t)
-    (lsp))
-  (add-hook 'csharp-mode-hook #'my/csharp-mode-hook))
-</pre>
-</div>
-
-<p>
-And&#x2026; that's it, really. There are a lot more awesome options to configure
-<code>lsp-mode</code>, and I recommend exploring them if you haven't already.
-</p>
-</div>
-</div>
-</div>
-
-<div id="outline-container-orgded3ebd" class="outline-2">
-<h2 id="orgded3ebd">Other Considerations</h2>
-<div class="outline-text-2" id="text-orgded3ebd">
-<p>
-<code>lsp-mode</code> gains a massive performance boost if Emacs is built with native JSON
-serialization and native elisp compilation. See <a href="https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation">this article</a> for more details. I
-<i>highly</i> recommend giving it a try.
-</p>
-</div>
-</div>
-<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div><div id="archive">
+</p>(...)<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div><div id="archive">
 <a href="https://eliza.sh/archive.html">Other posts</a>
 </div>
 </div>

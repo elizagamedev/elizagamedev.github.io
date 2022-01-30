@@ -1,12 +1,10 @@
 /* This color scheme is based on Modus Vivendi. */
 
-html {
-  background-color: #000000;
-}
-
 body {
-  font-family: sans-serif;
+  font-family: monospace;
   font-size: 13pt;
+  background-color: #000000; /* bg-main */
+  color: #ffffff; /* fg-main */
 }
 
 #content {
@@ -43,22 +41,38 @@ p a:visited,
 /* Before content. */
 .header {
   font-size: 12pt;
-  font-family: monospace;
   text-align: center;
   margin: 0 0 1rem 0;
 }
 
-/* h1 is the article title. */
+/* The page title. */
 h1 {
   color: #feacd0; /* magenta */
+  font-family: sans-serif;
   font-weight: lighter;
-  font-size: 33pt;
+  font-size: 40pt;
+  text-align: center;
+  margin: 0;
+}
+
+h1::after {
+  content: "===";
+  display: block;
+  color: #a8a8a8; /* fg-alt */
+  font-size: 30pt;
+  text-align: center;
+  letter-spacing: 0.5em;
   margin: 0 0 1rem 0;
 }
 
+/* The titles on the index and archive. */
+h2.post-title {
+  margin: 0;
+}
+
 div.post-date {
-  color: #d2b580; /* yellow-faint */
-  font-family: monospace;
+  margin: 1rem 0 0 0;
+  color: #a8a8a8; /* fg-alt */
   font-size: 12pt;
 }
 
@@ -69,8 +83,7 @@ h4,
 h5,
 h6 {
   font-weight: normal;
-  font-family: monospace;
-  margin: 2rem 0 1rem 0;
+  margin: 2rem 0 0.5rem 0;
 }
 
 h2 {
@@ -126,33 +139,29 @@ h6::before {
 /* Text body. */
 p {
   line-height: 1.7em;
-  color: #ffffff; /* fg-main */
   margin: 0 0 1em 0;
 }
 
 p code {
-  font-family: monospace;
   color: #fbd6f4; /* fg-special-calm */
+  background-color: #191a1b; /* bg-alt */
 }
 
 pre {
-  font-size: 10pt;
-  font-family: monospace;
-  color: #ffffff; /* fg-main */
   background-color: #191a1b; /* bg-alt */
-  margin: 1em 2em;
+  margin: 1rem 2rem;
+  padding: 0.5rem;
+  overflow-x: auto;
 }
 
 /* After content. */
 .taglist {
   color: #a8a8a8; /* fg-alt */
   font-size: 11pt;
-  font-family: monospace;
-  margin: 0 0 2em 0;
+  margin: 1rem 0 2rem 0;
 }
 
 #archive {
   font-size: 12pt;
-  font-family: monospace;
   text-align: center;
 }
