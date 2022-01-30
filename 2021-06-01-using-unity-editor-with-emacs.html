@@ -9,13 +9,17 @@
       title="RSS feed for https://eliza.sh/">
 <title>Using Unity Editor with Emacs</title>
 <meta name="author" content="Eliza Velasquez">
-<meta name="referrer" content="no-referrer">
-<link href= "static/style.css" rel="stylesheet" type="text/css" />
-<link rel="icon" href="static/favicon-96.png"></head>
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href= "static/style.css" rel="stylesheet" type="text/css" />
+  <link rel="icon" href="static/favicon-96.png"></head>
 <body>
 <div id="preamble" class="status"><div class="header">
-  <a href="https://eliza.sh">Eliza's Stuff</a>
-</div></div>
+    <a href="https://eliza.sh">Index</a>
+    <a href="https://eliza.sh/archive.html">Archive</a>
+    <a href="https://github.com/elizagamedev/">GitHub</a>
+    <a href="https://twitter.com/elizagamedev">Twitter</a>
+  </div></div>
 <div id="content">
 <div class="post-date">01 Jun 2021</div><h1 class="post-title"><a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">Using Unity Editor with Emacs</a></h1>
 <p>
@@ -34,9 +38,9 @@ out the idiosyncrasies of running OmniSharp on Linux. This guide still applies
 to Windows, though.
 </p>
 
-<div id="outline-container-org7fcc1fc" class="outline-2">
-<h2 id="org7fcc1fc">Foreground: What's LSP/OmniSharp?</h2>
-<div class="outline-text-2" id="text-org7fcc1fc">
+<div id="outline-container-orga4c543b" class="outline-2">
+<h2 id="orga4c543b">Foreground: What's LSP/OmniSharp?</h2>
+<div class="outline-text-2" id="text-orga4c543b">
 <p>
 In short: LSP (Language Server Protocol) provides almost all of the features you
 could ever want from an IDE in any code editor which supports the protocol.
@@ -46,9 +50,9 @@ in depth about how to configure OmniSharp to work with Emacs later.
 </div>
 </div>
 
-<div id="outline-container-org5ba6863" class="outline-2">
-<h2 id="org5ba6863">Configuring Unity to Open Emacs</h2>
-<div class="outline-text-2" id="text-org5ba6863">
+<div id="outline-container-org1e7546d" class="outline-2">
+<h2 id="org1e7546d">Configuring Unity to Open Emacs</h2>
+<div class="outline-text-2" id="text-org1e7546d">
 <p>
 The most obvious place to start is configuring Unity to open Emacs as its
 external editor. Unfortunately, things aren't so simple, due to a bizarre quirk.
@@ -92,13 +96,13 @@ maintained.
 </div>
 </div>
 
-<div id="outline-container-orgde34075" class="outline-2">
-<h2 id="orgde34075">Configuring Emacs to use LSP with OmniSharp</h2>
-<div class="outline-text-2" id="text-orgde34075">
+<div id="outline-container-orgcea18d8" class="outline-2">
+<h2 id="orgcea18d8">Configuring Emacs to use LSP with OmniSharp</h2>
+<div class="outline-text-2" id="text-orgcea18d8">
 </div>
-<div id="outline-container-orgc1c3c98" class="outline-3">
-<h3 id="orgc1c3c98">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
-<div class="outline-text-3" id="text-orgc1c3c98">
+<div id="outline-container-orge19965c" class="outline-3">
+<h3 id="orge19965c">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
+<div class="outline-text-3" id="text-orge19965c">
 <p>
 The Windows version of Unity will automatically install Visual Studio, which
 provides all of the crunchy bits that make OmniSharp work out of the box.
@@ -132,9 +136,9 @@ set it in my <code>init.el</code>.
 </div>
 </div>
 
-<div id="outline-container-orgd0bc789" class="outline-3">
-<h3 id="orgd0bc789">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
-<div class="outline-text-3" id="text-orgd0bc789">
+<div id="outline-container-orga0dc330" class="outline-3">
+<h3 id="orga0dc330">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
+<div class="outline-text-3" id="text-orga0dc330">
 <p>
 The actual elisp configuration is shockingly simple. (Note: I rely on use
 <a href="https://github.com/jwiegley/use-package">use-package</a> here.)
@@ -166,9 +170,9 @@ And&#x2026; that's it, really. There are a lot more awesome options to configure
 </div>
 </div>
 
-<div id="outline-container-orgded3ebd" class="outline-2">
-<h2 id="orgded3ebd">Other Considerations</h2>
-<div class="outline-text-2" id="text-orgded3ebd">
+<div id="outline-container-orgcdc53d5" class="outline-2">
+<h2 id="orgcdc53d5">Other Considerations</h2>
+<div class="outline-text-2" id="text-orgcdc53d5">
 <p>
 <code>lsp-mode</code> gains a massive performance boost if Emacs is built with native JSON
 serialization and native elisp compilation. See <a href="https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation">this article</a> for more details. I
