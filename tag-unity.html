@@ -17,6 +17,252 @@
 </div></div>
 <div id="content">
 <h1 class="title">Posts tagged "unity":</h1>
+<div class="post-date">30 Jan 2022</div><h1 class="post-title"><a href="https://eliza.sh/2022-01-30-using-stylecop-with-unity.html">Using StyleCop with Unity</a></h1>
+<p>
+Sometimes, it feels like you have to fight tooth and nail to get Unity to <a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">do the
+right thing</a>. Using <a href="https://github.com/DotNetAnalyzers/StyleCopAnalyzers">StyleCop Analyzers</a> in a project is no exception.
+</p>
+
+<div id="outline-container-org828f6e6" class="outline-2">
+<h2 id="org828f6e6">Foreground: What is StyleCop/StyleCop.Analyzers?</h2>
+<div class="outline-text-2" id="text-org828f6e6">
+<p>
+StyleCop.Analyzers is technically a static analysis tool for C#, but mostly
+does code style enforcement. It's comparable to <a href="https://eslint.org/">ESLint</a>, a similar tool for
+JavaScript.
+</p>
+
+<p>
+StyleCop "Classic" was an implementation of the same idea, but
+StyleCop.Analyzers uses the .NET Compiler Platform for code analysis, making it
+pluggable into the <a href="https://www.omnisharp.net/">OmniSharp language server</a>.
+</p>
+
+<p>
+<b>Sidenote:</b> If you are not using OmniSharp for your Unity code, you're missing
+out on some of the best tooling for any programming language, period. Also, this
+guide won't be useful to you until you have it configured, anyway. Visual Studio
+and <a href="https://www.jetbrains.com/resharper/">ReSharper</a> have support built in, but other editors require some tweaking. My
+article on using <a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">Unity/OmniSharp/Emacs</a> might be helpful even if you aren't an
+Emacs user.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org881edd4" class="outline-2">
+<h2 id="org881edd4">How is this normally done?</h2>
+<div class="outline-text-2" id="text-org881edd4">
+<p>
+In modern, non-Unity C# projects, this is typically done by just adding a
+reference to StyleCop.Analyzers to the csproj file to be retrieved via NuGet.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml">&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376"&gt;
+      &lt;IncludeAssets&gt;
+        runtime; build; native; contentfiles; analyzers; buildtransitive
+      &lt;/IncludeAssets&gt;
+      &lt;PrivateAssets&gt;all&lt;/PrivateAssets&gt;
+    &lt;/PackageReference&gt;
+    &lt;AdditionalFiles Include="stylecop.json" /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;
+</pre>
+</div>
+
+<p>
+Two lines in particular here are relevant for Unity: <code>&lt;PackageReference&gt;</code> and
+<code>&lt;AdditionalFiles&gt;</code>.
+</p>
+
+<p>
+The <code>&lt;PackageReference&gt;</code> line informs the dotnet SDK which NuGet package to
+download. At the time of writing, it's not possible to use NuGet in this manner
+with Unity. We can instead download the StyleCop NuGet package and copy the
+relevant DLL files. Using the NuGet CLI:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">nuget install StyleCop.Analyzers -Version 1.2.0-beta.406 -Framework netstandard2.1
+</pre>
+</div>
+
+<p>
+Note that you may want to specify a different version or framework.
+</p>
+
+<p>
+Adding the reference to the DLL directly would normally be as simple as the
+following csproj configuration:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml">&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+  &lt;ItemGroup&gt;
+    &lt;Analyzer Include="StyleCop/StyleCop.Analyzers.dll" /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;
+</pre>
+</div>
+
+<p>
+&#x2026;except that Unity will clobber these changes anytime it regenerates project
+files. More on that later.
+</p>
+
+<p>
+The other important line, the <code>&lt;AdditionalFiles&gt;</code> include for stylecop.json, is
+documented <a href="https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/Configuration.md">here</a>. The simplest possible stylecop.json file looks like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-json">{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json"
+}
+</pre>
+</div>
+
+<p>
+We will now focus on the issue of the clobbered configuration.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5a298df" class="outline-2">
+<h2 id="org5a298df">Previous solutions that no longer work</h2>
+<div class="outline-text-2" id="text-org5a298df">
+<p>
+Elsewhere online, you may see solutions that use the undocumented
+<code>OnGeneratedCSProject</code> hook to modify csproj files to add a reference to the
+assembly (<a href="https://github.com/ImLp/Unity-StyleCop">example 1</a>, <a href="https://www.nowsprinting.com/entry/2021/11/01/083258">example 2</a>). Unfortunately, this hook was <a href="https://github.com/Unity-Technologies/UnityCsReference/commit/0b34d6caff4a5ca3253c2327cee34c08a52ba745">unceremoniously
+dropped</a> in the 2021.1 series.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc3eb8f7" class="outline-2">
+<h2 id="orgc3eb8f7">Directory.Build.props to the rescue</h2>
+<div class="outline-text-2" id="text-orgc3eb8f7">
+<p>
+Fortunately, we can place these configuration changes in a special file:
+<a href="https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2019#directorybuildprops-and-directorybuildtargets">Directory.Build.props</a>. Essentially, this is an XML file that gets pulled in with
+every csproj file in the directory its located without actually modifying those
+files.
+</p>
+
+<p>
+The solution is that simple: we can create a Directory.Build.props file to make
+the above configuration changes.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml">&lt;Project&gt;
+  &lt;ItemGroup&gt;
+    &lt;Analyzer Include="StyleCop/StyleCop.Analyzers.dll" /&gt;
+    &lt;AdditionalFiles Include="stylecop.json" /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;
+</pre>
+</div>
+
+<p>
+The solution turns out to be rather simple in the end, fortunately.
+</p>
+
+<p>
+Now with any LSP-enabled editor, you should begin to see the various StyleCop
+lints in your code. You may need to enable analyzers by creating or adding to
+the omnisharp.json file in the same directory as your
+projects/Directory.Build.props:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-json">{
+  "RoslynExtensionsOptions": {
+    "enableAnalyzersSupport": true
+  }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgeb7b09d" class="outline-2">
+<h2 id="orgeb7b09d">Next Steps</h2>
+<div class="outline-text-2" id="text-orgeb7b09d">
+<p>
+Once you've configured stylecop.json, you might want to fine-tune which rules
+are enabled. Traditionally this is done with a <a href="https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/StyleCop.Analyzers/StyleCop.Analyzers.CodeFixes/rulesets/StyleCopAnalyzersDefault.ruleset">ruleset</a> file, which is, frankly,
+a huge pain to create and edit by hand, especially if you're not using Visual
+Studio. Luckily, the language server is capable of reading rules from
+<a href="https://editorconfig.org/">.editorconfig</a> files.
+</p>
+
+<p>
+First, ensure OmniSharp is configured to use .editorconfig by adding or editing
+the omnisharp.json file located in the same directory as your generated csproj
+files:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-json">{
+  "FormattingOptions": {
+    "enableEditorConfigSupport": true
+  }
+}
+</pre>
+</div>
+
+<p>
+Then, create or add the following to your .editorconfig file in the same
+directory.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-conf"># Remove the line below if you want to inherit
+# .editorconfig settings from higher directories
+root = true
+
+# C# files
+[*.cs]
+
+# EXAMPLE: Disable all naming convention analyzers.
+dotnet_diagnostic.SA1300.severity = none
+dotnet_diagnostic.SA1301.severity = none
+dotnet_diagnostic.SA1302.severity = none
+dotnet_diagnostic.SA1303.severity = none
+dotnet_diagnostic.SA1304.severity = none
+dotnet_diagnostic.SA1305.severity = none
+dotnet_diagnostic.SA1306.severity = none
+dotnet_diagnostic.SA1307.severity = none
+dotnet_diagnostic.SA1308.severity = none
+dotnet_diagnostic.SA1309.severity = none
+dotnet_diagnostic.SA1310.severity = none
+dotnet_diagnostic.SA1311.severity = none
+dotnet_diagnostic.SA1312.severity = none
+dotnet_diagnostic.SA1313.severity = none
+dotnet_diagnostic.SA1314.severity = none
+</pre>
+</div>
+
+<p>
+You can see the names of all of tweakable rules in the ruleset file linked
+above.
+</p>
+
+<p>
+<b>Sidenote:</b> OmniSharp provides an impressive number of custom .editorconfig
+settings that can be used to unify and enforce your code style across a variety
+of editors. Unfortunately, generating an extensive set of tweaks from scratch is
+very difficult without Visual Studio, as a lot of the options aren't documented.
+As is evident by this article, this is a frustrating pattern with a lot of C#
+tooling that hopefully will improve in the future.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div>
 <div class="post-date">01 Jun 2021</div><h1 class="post-title"><a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">Using Unity Editor with Emacs</a></h1>
 <p>
 Let's skip right to the core of the issue: Unity is designed with the
@@ -34,9 +280,9 @@ out the idiosyncrasies of running OmniSharp on Linux. This guide still applies
 to Windows, though.
 </p>
 
-<div id="outline-container-orgce68f66" class="outline-2">
-<h2 id="orgce68f66">Foreground: What's LSP/OmniSharp?</h2>
-<div class="outline-text-2" id="text-orgce68f66">
+<div id="outline-container-org7fcc1fc" class="outline-2">
+<h2 id="org7fcc1fc">Foreground: What's LSP/OmniSharp?</h2>
+<div class="outline-text-2" id="text-org7fcc1fc">
 <p>
 In short: LSP (Language Server Protocol) provides almost all of the features you
 could ever want from an IDE in any code editor which supports the protocol.
@@ -46,9 +292,9 @@ in depth about how to configure OmniSharp to work with Emacs later.
 </div>
 </div>
 
-<div id="outline-container-orgf71301f" class="outline-2">
-<h2 id="orgf71301f">Configuring Unity to Open Emacs</h2>
-<div class="outline-text-2" id="text-orgf71301f">
+<div id="outline-container-org5ba6863" class="outline-2">
+<h2 id="org5ba6863">Configuring Unity to Open Emacs</h2>
+<div class="outline-text-2" id="text-org5ba6863">
 <p>
 The most obvious place to start is configuring Unity to open Emacs as its
 external editor. Unfortunately, things aren't so simple, due to a bizarre quirk.
@@ -92,18 +338,18 @@ maintained.
 </div>
 </div>
 
-<div id="outline-container-org1d186b8" class="outline-2">
-<h2 id="org1d186b8">Configuring Emacs to use LSP with OmniSharp</h2>
-<div class="outline-text-2" id="text-org1d186b8">
+<div id="outline-container-orgde34075" class="outline-2">
+<h2 id="orgde34075">Configuring Emacs to use LSP with OmniSharp</h2>
+<div class="outline-text-2" id="text-orgde34075">
 </div>
-<div id="outline-container-orga952d74" class="outline-3">
-<h3 id="orga952d74">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
-<div class="outline-text-3" id="text-orga952d74">
+<div id="outline-container-orgc1c3c98" class="outline-3">
+<h3 id="orgc1c3c98">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
+<div class="outline-text-3" id="text-orgc1c3c98">
 <p>
 The Windows version of Unity will automatically install Visual Studio, which
 provides all of the crunchy bits that make OmniSharp work out of the box.
 Unfortunately, on other platforms, we have a bit of setup to do. The short
-version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
+version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
 not come with a complete set of core assemblies for .NET, so we have to install
 those ourselves.
 </p>
@@ -132,9 +378,9 @@ set it in my <code>init.el</code>.
 </div>
 </div>
 
-<div id="outline-container-org9ff57dd" class="outline-3">
-<h3 id="org9ff57dd">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
-<div class="outline-text-3" id="text-org9ff57dd">
+<div id="outline-container-orgd0bc789" class="outline-3">
+<h3 id="orgd0bc789">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
+<div class="outline-text-3" id="text-orgd0bc789">
 <p>
 The actual elisp configuration is shockingly simple. (Note: I rely on use
 <a href="https://github.com/jwiegley/use-package">use-package</a> here.)
@@ -166,9 +412,9 @@ And&#x2026; that's it, really. There are a lot more awesome options to configure
 </div>
 </div>
 
-<div id="outline-container-org6fad191" class="outline-2">
-<h2 id="org6fad191">Other Considerations</h2>
-<div class="outline-text-2" id="text-org6fad191">
+<div id="outline-container-orgded3ebd" class="outline-2">
+<h2 id="orgded3ebd">Other Considerations</h2>
+<div class="outline-text-2" id="text-orgded3ebd">
 <p>
 <code>lsp-mode</code> gains a massive performance boost if Emacs is built with native JSON
 serialization and native elisp compilation. See <a href="https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation">this article</a> for more details. I
@@ -176,7 +422,7 @@ serialization and native elisp compilation. See <a href="https://www.masteringem
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> </div><div id="archive">
+<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div><div id="archive">
 <a href="https://eliza.sh/archive.html">Other posts</a>
 </div>
 </div>

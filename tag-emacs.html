@@ -34,9 +34,9 @@ out the idiosyncrasies of running OmniSharp on Linux. This guide still applies
 to Windows, though.
 </p>
 
-<div id="outline-container-orgce68f66" class="outline-2">
-<h2 id="orgce68f66">Foreground: What's LSP/OmniSharp?</h2>
-<div class="outline-text-2" id="text-orgce68f66">
+<div id="outline-container-org7fcc1fc" class="outline-2">
+<h2 id="org7fcc1fc">Foreground: What's LSP/OmniSharp?</h2>
+<div class="outline-text-2" id="text-org7fcc1fc">
 <p>
 In short: LSP (Language Server Protocol) provides almost all of the features you
 could ever want from an IDE in any code editor which supports the protocol.
@@ -46,9 +46,9 @@ in depth about how to configure OmniSharp to work with Emacs later.
 </div>
 </div>
 
-<div id="outline-container-orgf71301f" class="outline-2">
-<h2 id="orgf71301f">Configuring Unity to Open Emacs</h2>
-<div class="outline-text-2" id="text-orgf71301f">
+<div id="outline-container-org5ba6863" class="outline-2">
+<h2 id="org5ba6863">Configuring Unity to Open Emacs</h2>
+<div class="outline-text-2" id="text-org5ba6863">
 <p>
 The most obvious place to start is configuring Unity to open Emacs as its
 external editor. Unfortunately, things aren't so simple, due to a bizarre quirk.
@@ -92,18 +92,18 @@ maintained.
 </div>
 </div>
 
-<div id="outline-container-org1d186b8" class="outline-2">
-<h2 id="org1d186b8">Configuring Emacs to use LSP with OmniSharp</h2>
-<div class="outline-text-2" id="text-org1d186b8">
+<div id="outline-container-orgde34075" class="outline-2">
+<h2 id="orgde34075">Configuring Emacs to use LSP with OmniSharp</h2>
+<div class="outline-text-2" id="text-orgde34075">
 </div>
-<div id="outline-container-orga952d74" class="outline-3">
-<h3 id="orga952d74">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
-<div class="outline-text-3" id="text-orga952d74">
+<div id="outline-container-orgc1c3c98" class="outline-3">
+<h3 id="orgc1c3c98">Prerequisite: (Linux, macOS) Install and Configure Mono</h3>
+<div class="outline-text-3" id="text-orgc1c3c98">
 <p>
 The Windows version of Unity will automatically install Visual Studio, which
 provides all of the crunchy bits that make OmniSharp work out of the box.
 Unfortunately, on other platforms, we have a bit of setup to do. The short
-version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
+version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
 not come with a complete set of core assemblies for .NET, so we have to install
 those ourselves.
 </p>
@@ -132,9 +132,9 @@ set it in my <code>init.el</code>.
 </div>
 </div>
 
-<div id="outline-container-org9ff57dd" class="outline-3">
-<h3 id="org9ff57dd">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
-<div class="outline-text-3" id="text-org9ff57dd">
+<div id="outline-container-orgd0bc789" class="outline-3">
+<h3 id="orgd0bc789">Configuring <code>csharp-mode</code> and <code>lsp-mode</code></h3>
+<div class="outline-text-3" id="text-orgd0bc789">
 <p>
 The actual elisp configuration is shockingly simple. (Note: I rely on use
 <a href="https://github.com/jwiegley/use-package">use-package</a> here.)
@@ -166,9 +166,9 @@ And&#x2026; that's it, really. There are a lot more awesome options to configure
 </div>
 </div>
 
-<div id="outline-container-org6fad191" class="outline-2">
-<h2 id="org6fad191">Other Considerations</h2>
-<div class="outline-text-2" id="text-org6fad191">
+<div id="outline-container-orgded3ebd" class="outline-2">
+<h2 id="orgded3ebd">Other Considerations</h2>
+<div class="outline-text-2" id="text-orgded3ebd">
 <p>
 <code>lsp-mode</code> gains a massive performance boost if Emacs is built with native JSON
 serialization and native elisp compilation. See <a href="https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation">this article</a> for more details. I
@@ -176,7 +176,7 @@ serialization and native elisp compilation. See <a href="https://www.masteringem
 </p>
 </div>
 </div>
-<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> </div><div id="archive">
+<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div><div id="archive">
 <a href="https://eliza.sh/archive.html">Other posts</a>
 </div>
 </div>

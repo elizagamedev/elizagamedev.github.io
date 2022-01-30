@@ -1,7 +1,7 @@
 #+title: Using Unity Editor with Emacs
 #+date: <2021-06-01 Tue>
 #+description: How to configure the Unity game engine editor to integrate with Emacs
-#+filetags: unity emacs
+#+filetags: unity emacs csharp
 
 Let's skip right to the core of the issue: Unity is designed with the
 expectation that you are using Visual Studio or Visual Studio Code for editing
@@ -57,7 +57,7 @@ maintained.
 The Windows version of Unity will automatically install Visual Studio, which
 provides all of the crunchy bits that make OmniSharp work out of the box.
 Unfortunately, on other platforms, we have a bit of setup to do. The short
-version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
+version is that the non-Windows, i.e. Mono-based, distributions of OmniSharp do
 not come with a complete set of core assemblies for .NET, so we have to install
 those ourselves.
 

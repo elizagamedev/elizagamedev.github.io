@@ -1,0 +1,182 @@
+#+title: Using StyleCop with Unity
+#+date: <2022-01-30 00:16>
+#+description: How to configure a Unity game engine project to use the StyleCop static analysis tool for C# code
+#+filetags: unity csharp
+
+Sometimes, it feels like you have to fight tooth and nail to get Unity to [[https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html][do the
+right thing]]. Using [[https://github.com/DotNetAnalyzers/StyleCopAnalyzers][StyleCop Analyzers]] in a project is no exception.
+
+* Foreground: What is StyleCop/StyleCop.Analyzers?
+
+StyleCop.Analyzers is technically a static analysis tool for C#, but mostly
+does code style enforcement. It's comparable to [[https://eslint.org/][ESLint]], a similar tool for
+JavaScript.
+
+StyleCop "Classic" was an implementation of the same idea, but
+StyleCop.Analyzers uses the .NET Compiler Platform for code analysis, making it
+pluggable into the [[https://www.omnisharp.net/][OmniSharp language server]].
+
+*Sidenote:* If you are not using OmniSharp for your Unity code, you're missing
+out on some of the best tooling for any programming language, period. Also, this
+guide won't be useful to you until you have it configured, anyway. Visual Studio
+and [[https://www.jetbrains.com/resharper/][ReSharper]] have support built in, but other editors require some tweaking. My
+article on using [[https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html][Unity/OmniSharp/Emacs]] might be helpful even if you aren't an
+Emacs user.
+
+* How is this normally done?
+
+In modern, non-Unity C# projects, this is typically done by just adding a
+reference to StyleCop.Analyzers to the csproj file to be retrieved via NuGet.
+
+#+begin_src xml
+  <Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+      <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.376">
+        <IncludeAssets>
+          runtime; build; native; contentfiles; analyzers; buildtransitive
+        </IncludeAssets>
+        <PrivateAssets>all</PrivateAssets>
+      </PackageReference>
+      <AdditionalFiles Include="stylecop.json" />
+    </ItemGroup>
+  </Project>
+#+end_src
+
+Two lines in particular here are relevant for Unity: =<PackageReference>= and
+=<AdditionalFiles>=.
+
+The =<PackageReference>= line informs the dotnet SDK which NuGet package to
+download. At the time of writing, it's not possible to use NuGet in this manner
+with Unity. We can instead download the StyleCop NuGet package and copy the
+relevant DLL files. Using the NuGet CLI:
+
+#+begin_src sh
+  nuget install StyleCop.Analyzers -Version 1.2.0-beta.406 -Framework netstandard2.1
+#+end_src
+
+Note that you may want to specify a different version or framework.
+
+Adding the reference to the DLL directly would normally be as simple as the
+following csproj configuration:
+
+#+begin_src xml
+  <Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+      <Analyzer Include="StyleCop/StyleCop.Analyzers.dll" />
+    </ItemGroup>
+  </Project>
+#+end_src
+
+...except that Unity will clobber these changes anytime it regenerates project
+files. More on that later.
+
+The other important line, the =<AdditionalFiles>= include for stylecop.json, is
+documented [[https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/Configuration.md][here]]. The simplest possible stylecop.json file looks like this:
+
+#+begin_src json
+  {
+    "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json"
+  }
+#+end_src
+
+We will now focus on the issue of the clobbered configuration.
+
+* Previous solutions that no longer work
+
+Elsewhere online, you may see solutions that use the undocumented
+=OnGeneratedCSProject= hook to modify csproj files to add a reference to the
+assembly ([[https://github.com/ImLp/Unity-StyleCop][example 1]], [[https://www.nowsprinting.com/entry/2021/11/01/083258][example 2]]). Unfortunately, this hook was [[https://github.com/Unity-Technologies/UnityCsReference/commit/0b34d6caff4a5ca3253c2327cee34c08a52ba745][unceremoniously
+dropped]] in the 2021.1 series.
+
+* Directory.Build.props to the rescue
+
+Fortunately, we can place these configuration changes in a special file:
+[[https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2019#directorybuildprops-and-directorybuildtargets][Directory.Build.props]]. Essentially, this is an XML file that gets pulled in with
+every csproj file in the directory its located without actually modifying those
+files.
+
+The solution is that simple: we can create a Directory.Build.props file to make
+the above configuration changes.
+
+#+begin_src xml
+  <Project>
+    <ItemGroup>
+      <Analyzer Include="StyleCop/StyleCop.Analyzers.dll" />
+      <AdditionalFiles Include="stylecop.json" />
+    </ItemGroup>
+  </Project>
+#+end_src
+
+The solution turns out to be rather simple in the end, fortunately.
+
+Now with any LSP-enabled editor, you should begin to see the various StyleCop
+lints in your code. You may need to enable analyzers by creating or adding to
+the omnisharp.json file in the same directory as your
+projects/Directory.Build.props:
+
+#+begin_src json
+  {
+    "RoslynExtensionsOptions": {
+      "enableAnalyzersSupport": true
+    }
+  }
+#+end_src
+
+* Next Steps
+
+Once you've configured stylecop.json, you might want to fine-tune which rules
+are enabled. Traditionally this is done with a [[https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/StyleCop.Analyzers/StyleCop.Analyzers.CodeFixes/rulesets/StyleCopAnalyzersDefault.ruleset][ruleset]] file, which is, frankly,
+a huge pain to create and edit by hand, especially if you're not using Visual
+Studio. Luckily, the language server is capable of reading rules from
+[[https://editorconfig.org/][.editorconfig]] files.
+
+First, ensure OmniSharp is configured to use .editorconfig by adding or editing
+the omnisharp.json file located in the same directory as your generated csproj
+files:
+
+#+begin_src json
+  {
+    "FormattingOptions": {
+      "enableEditorConfigSupport": true
+    }
+  }
+#+end_src
+
+Then, create or add the following to your .editorconfig file in the same
+directory.
+
+#+begin_src conf
+  # Remove the line below if you want to inherit
+  # .editorconfig settings from higher directories
+  root = true
+
+  # C# files
+  [*.cs]
+
+  # EXAMPLE: Disable all naming convention analyzers.
+  dotnet_diagnostic.SA1300.severity = none
+  dotnet_diagnostic.SA1301.severity = none
+  dotnet_diagnostic.SA1302.severity = none
+  dotnet_diagnostic.SA1303.severity = none
+  dotnet_diagnostic.SA1304.severity = none
+  dotnet_diagnostic.SA1305.severity = none
+  dotnet_diagnostic.SA1306.severity = none
+  dotnet_diagnostic.SA1307.severity = none
+  dotnet_diagnostic.SA1308.severity = none
+  dotnet_diagnostic.SA1309.severity = none
+  dotnet_diagnostic.SA1310.severity = none
+  dotnet_diagnostic.SA1311.severity = none
+  dotnet_diagnostic.SA1312.severity = none
+  dotnet_diagnostic.SA1313.severity = none
+  dotnet_diagnostic.SA1314.severity = none
+#+end_src
+
+You can see the names of all of tweakable rules in the ruleset file linked
+above.
+
+*Sidenote:* OmniSharp provides an impressive number of custom .editorconfig
+settings that can be used to unify and enforce your code style across a variety
+of editors. Unfortunately, generating an extensive set of tweaks from scratch is
+very difficult without Visual Studio, as a lot of the options aren't documented.
+As is evident by this article, this is a frustrating pattern with a lot of C#
+tooling that hopefully will improve in the future.
