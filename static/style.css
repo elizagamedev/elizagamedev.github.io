@@ -1,10 +1,12 @@
 /* This color scheme is based on Modus Vivendi. */
 
+html {
+  background-color: #000000;
+}
+
 body {
   font-family: sans-serif;
-  background-color: #000000;
   font-size: 13pt;
-  margin: 0;
 }
 
 #content {
