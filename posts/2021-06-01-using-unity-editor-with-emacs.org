@@ -16,12 +16,18 @@ out the idiosyncrasies of running OmniSharp on Linux. This guide still applies
 to Windows, though.
 
 * Foreground: What's LSP/OmniSharp?
+:PROPERTIES:
+:CUSTOM_ID: org-11dec5b3-3b13-48a2-b869-5f29482e1bf3
+:END:
 In short: LSP (Language Server Protocol) provides almost all of the features you
 could ever want from an IDE in any code editor which supports the protocol.
 OmniSharp is such a server for C#, and a very powerful one at that. We will go
 in depth about how to configure OmniSharp to work with Emacs later.
 
 * Configuring Unity to Open Emacs
+:PROPERTIES:
+:CUSTOM_ID: org-7b590bee-5adf-47e7-a209-c98b4239a382
+:END:
 The most obvious place to start is configuring Unity to open Emacs as its
 external editor. Unfortunately, things aren't so simple, due to a bizarre quirk.
 Unity automatically generates and maintains solution and project files, but
@@ -53,7 +59,13 @@ Unity. You only need to do this once; Unity will automatically keep them
 maintained.
 
 * Configuring Emacs to use LSP with OmniSharp
+:PROPERTIES:
+:CUSTOM_ID: org-9124884c-7f4b-4fb6-b9dc-39e3a087356f
+:END:
 ** Prerequisite: (Linux, macOS) Install and Configure Mono
+:PROPERTIES:
+:CUSTOM_ID: org-98c9f64c-d551-4e8b-ac90-a8d4704f502d
+:END:
 The Windows version of Unity will automatically install Visual Studio, which
 provides all of the crunchy bits that make OmniSharp work out of the box.
 Unfortunately, on other platforms, we have a bit of setup to do. The short
@@ -77,6 +89,9 @@ set it in my =init.el=.
 (The path on macOS is likely different, but I'm not certain.)
 
 ** Configuring =csharp-mode= and =lsp-mode=
+:PROPERTIES:
+:CUSTOM_ID: org-e8ebf06c-a0d6-4140-a291-3a509f25f74c
+:END:
 The actual elisp configuration is shockingly simple. (Note: I rely on use
 [[https://github.com/jwiegley/use-package][use-package]] here.)
 
@@ -101,6 +116,9 @@ And... that's it, really. There are a lot more awesome options to configure
 =lsp-mode=, and I recommend exploring them if you haven't already.
 
 * Other Considerations
+:PROPERTIES:
+:CUSTOM_ID: org-f1b7360f-d399-4dd1-96ee-c945be890ff8
+:END:
 =lsp-mode= gains a massive performance boost if Emacs is built with native JSON
 serialization and native elisp compilation. See [[https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation][this article]] for more details. I
 /highly/ recommend giving it a try.

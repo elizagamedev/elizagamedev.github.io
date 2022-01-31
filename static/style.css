@@ -1,7 +1,7 @@
 /* This color scheme is based on Modus Vivendi. */
 
 body {
-  font-family: monospace;
+  font-family: sans-serif;
   font-size: 13pt;
   background-color: #000000; /* bg-main */
   color: #ffffff; /* fg-main */
@@ -48,7 +48,6 @@ p a:visited,
 /* The page title. */
 h1 {
   color: #feacd0; /* magenta */
-  font-family: sans-serif;
   font-weight: lighter;
   font-size: 40pt;
   text-align: center;
@@ -56,6 +55,7 @@ h1 {
 }
 
 h1::after {
+  font-family: monospace;
   content: "===";
   display: block;
   color: #a8a8a8; /* fg-alt */
@@ -82,6 +82,7 @@ h3,
 h4,
 h5,
 h6 {
+  font-family: monospace;
   font-weight: normal;
   margin: 2rem 0 0.5rem 0;
 }
@@ -143,11 +144,13 @@ p {
 }
 
 p code {
+  font-family: monospace;
   color: #fbd6f4; /* fg-special-calm */
   background-color: #191a1b; /* bg-alt */
 }
 
 pre {
+  font-family: monospace;
   background-color: #191a1b; /* bg-alt */
   margin: 1rem 2rem;
   padding: 0.5rem;
@@ -156,6 +159,7 @@ pre {
 
 /* After content. */
 .taglist {
+  font-family: monospace;
   color: #a8a8a8; /* fg-alt */
   font-size: 11pt;
   margin: 1rem 0 2rem 0;
