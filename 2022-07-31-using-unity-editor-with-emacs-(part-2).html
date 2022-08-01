@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="How to configure the Unity game engine editor to integrate with Emacs">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://eliza.sh/rss.xml"
+      title="RSS feed for https://eliza.sh/">
+<title>Using Unity Editor With Emacs (Part 2)</title>
+<meta name="author" content="Eliza Velasquez">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href= "static/style.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon-96.png"></head>
+<body>
+<div id="preamble" class="status"><div class="header">
+  <a href="https://eliza.sh">Index</a>
+  <a href="https://eliza.sh/archive.html">Archive</a>
+  <a href="https://github.com/elizagamedev/">GitHub</a>
+  <a href="https://twitter.com/elizagamedev">Twitter</a>
+</div></div>
+<div id="content">
+<div class="post-date">31 Jul 2022</div><h1 class="post-title"><a href="https://eliza.sh/2022-07-31-using-unity-editor-with-emacs-(part-2).html">Using Unity Editor With Emacs (Part 2)</a></h1>
+<p>
+A while ago, I wrote an <a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">article about using Unity with Emacs</a>. While this article
+is still useful, I have encountered a few more issues with Unity, and learned
+better ways to deal with its unique demands. It is written with the assumption
+that you have already read the aforementioned article.
+</p>
+
+<div id="outline-container-org-aab9db34-214d-4f75-ab72-3f928a9eb86a" class="outline-2">
+<h2 id="org-aab9db34-214d-4f75-ab72-3f928a9eb86a">A new "solution" solution: The Rider plugin</h2>
+<div class="outline-text-2" id="text-org-aab9db34-214d-4f75-ab72-3f928a9eb86a">
+<p>
+I previously mentioned an issue with the Visual Studio Code “emulation” method
+of Emacs integration: having to set <code>FrameworkPathOverride</code> due to some mono
+environment weirdness. There are additional problems with the VS Code support
+package: the <a href="https://docs.microsoft.com/sr-cyrl-rs/dotnet/csharp/language-reference/compiler-options/miscellaneous">csc.rsp</a> file is not taken into account when generating the project
+build options, meaning that if you want to, for example, <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/language#nullable">enable C# 8 nullable
+reference types</a>, OmniSharp will not pick up these options and loudly complain.
+</p>
+
+<p>
+The JetBrains Rider IDE support package generates solution and project files
+which makes these problems disappear. Unfortunately, it’s not sufficient enough
+to make a simple shim which execs its command line arguments as in the solution
+described in the previous article; if Unity thinks it’s using Rider, it will
+invoke the binary using hardcoded command-line options. This unfortunately
+necessitated the creation of a slightly less trivial tool: <a href="https://github.com/elizagamedev/rider2emacs">rider2emacs</a>. This is
+a simple Rust tool which translates command-line arguments from Rider to
+emacsclient. The latest version of <a href="https://github.com/elizagamedev/unity.el">unity.el</a> advises this approach instead of
+using the <code>code</code> shim.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org-85064b54-de87-4aed-b752-c5d7c1e92f5d" class="outline-2">
+<h2 id="org-85064b54-de87-4aed-b752-c5d7c1e92f5d">Issues with <code>lsp-mode</code> finding the project root</h2>
+<div class="outline-text-2" id="text-org-85064b54-de87-4aed-b752-c5d7c1e92f5d">
+<p>
+Even if you followed the instructions down to the letter in my previous blog
+post, you may have run into an issue where LSP still doesn’t work properly. One
+potential culprit is that <code>lsp-mode</code> did not correctly guess the root of the
+project, even with <code>lsp-auto-guess-root</code> enabled; the same might happen if you
+use <a href="https://github.com/joaotavora/eglot">eglot</a> instead. This will likely happen if you aren’t using Git or some other
+VCS in your project.
+</p>
+
+<p>
+From my understanding, both of these packages depend on determining the project
+root by using the built-in <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html">project.el</a> package. With no recognized VCS set up,
+project.el is unable to determine the root, and OmniSharp flounders as a result.
+The simplest solution, of course, is to just set up VCS in your project. (You
+ought to be doing this anyway!) But if that is not an option for you, the Emacs
+manual provides <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/EDE.html">guidance on using EDE (Emacs Development Environment) instead</a>,
+but this is quite a heavyweight solution.
+</p>
+
+<p>
+There’s a third option as well: the <code>project-find-functions</code> variable. To use
+this, you essentially create a new project.el “backend” specific to C# projects.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">cl-defmethod</span> <span style="color: #88C0D0;">project-root</span> <span style="color: #B48EAD;">(</span><span style="color: #A3BE8C;">(</span>project <span style="color: #5D80AE;">(</span>head csharp<span style="color: #5D80AE;">)</span><span style="color: #A3BE8C;">)</span><span style="color: #B48EAD;">)</span>
+  <span style="color: #B48EAD;">(</span>cdr project<span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span>
+
+<span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">defun</span> <span style="color: #88C0D0;">my/project-try-csharp</span> <span style="color: #B48EAD;">(</span>dir<span style="color: #B48EAD;">)</span>
+  <span style="color: #B48EAD;">(</span><span style="color: #81A1C1;">if-let</span> <span style="color: #A3BE8C;">(</span><span style="color: #5D80AE;">(</span>root
+            <span style="color: #8FBCBB;">(</span>locate-dominating-file
+             dir <span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">lambda</span> <span style="color: #B48EAD;">(</span>dir<span style="color: #B48EAD;">)</span>
+                   <span style="color: #B48EAD;">(</span>directory-files dir nil <span style="color: #A3BE8C; font-style: italic;">"\\.sln$"</span> t 1<span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span><span style="color: #8FBCBB;">)</span><span style="color: #5D80AE;">)</span><span style="color: #A3BE8C;">)</span>
+      <span style="color: #A3BE8C;">(</span>cons 'csharp root<span style="color: #A3BE8C;">)</span><span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span>
+
+<span style="color: #81A1C1;">(</span>add-hook 'project-find-functions #'my/project-try-csharp<span style="color: #81A1C1;">)</span>
+</pre>
+</div>
+
+<p>
+For more information about project backends, <a href="https://vannilla.org/write/1609258895/article.html">this article</a> is invaluable reading!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div></div>
+<div id="postamble" class="status">If you have feedback for this blog, please <a href="https://github.com/elizagamedev/elizagamedev.github.io/issues">create an issue here</a>.</div>
+</body>
+</html>

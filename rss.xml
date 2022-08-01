@@ -4,7 +4,98 @@
 <title><![CDATA[Eliza's Stuff]]></title>
 <description><![CDATA[Eliza's Stuff]]></description>
 <link>https://eliza.sh/</link>
-<lastBuildDate>Sun, 30 Jan 2022 17:11:11 -0800</lastBuildDate>
+<lastBuildDate>Sun, 31 Jul 2022 20:43:11 -0700</lastBuildDate>
+<item>
+  <title><![CDATA[Using Unity Editor With Emacs (Part 2)]]></title>
+  <description><![CDATA[
+<p>
+A while ago, I wrote an <a href="https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html">article about using Unity with Emacs</a>. While this article
+is still useful, I have encountered a few more issues with Unity, and learned
+better ways to deal with its unique demands. It is written with the assumption
+that you have already read the aforementioned article.
+</p>
+
+<div id="outline-container-org-aab9db34-214d-4f75-ab72-3f928a9eb86a" class="outline-2">
+<h2 id="org-aab9db34-214d-4f75-ab72-3f928a9eb86a">A new "solution" solution: The Rider plugin</h2>
+<div class="outline-text-2" id="text-org-aab9db34-214d-4f75-ab72-3f928a9eb86a">
+<p>
+I previously mentioned an issue with the Visual Studio Code “emulation” method
+of Emacs integration: having to set <code>FrameworkPathOverride</code> due to some mono
+environment weirdness. There are additional problems with the VS Code support
+package: the <a href="https://docs.microsoft.com/sr-cyrl-rs/dotnet/csharp/language-reference/compiler-options/miscellaneous">csc.rsp</a> file is not taken into account when generating the project
+build options, meaning that if you want to, for example, <a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/language#nullable">enable C# 8 nullable
+reference types</a>, OmniSharp will not pick up these options and loudly complain.
+</p>
+
+<p>
+The JetBrains Rider IDE support package generates solution and project files
+which makes these problems disappear. Unfortunately, it’s not sufficient enough
+to make a simple shim which execs its command line arguments as in the solution
+described in the previous article; if Unity thinks it’s using Rider, it will
+invoke the binary using hardcoded command-line options. This unfortunately
+necessitated the creation of a slightly less trivial tool: <a href="https://github.com/elizagamedev/rider2emacs">rider2emacs</a>. This is
+a simple Rust tool which translates command-line arguments from Rider to
+emacsclient. The latest version of <a href="https://github.com/elizagamedev/unity.el">unity.el</a> advises this approach instead of
+using the <code>code</code> shim.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org-85064b54-de87-4aed-b752-c5d7c1e92f5d" class="outline-2">
+<h2 id="org-85064b54-de87-4aed-b752-c5d7c1e92f5d">Issues with <code>lsp-mode</code> finding the project root</h2>
+<div class="outline-text-2" id="text-org-85064b54-de87-4aed-b752-c5d7c1e92f5d">
+<p>
+Even if you followed the instructions down to the letter in my previous blog
+post, you may have run into an issue where LSP still doesn’t work properly. One
+potential culprit is that <code>lsp-mode</code> did not correctly guess the root of the
+project, even with <code>lsp-auto-guess-root</code> enabled; the same might happen if you
+use <a href="https://github.com/joaotavora/eglot">eglot</a> instead. This will likely happen if you aren’t using Git or some other
+VCS in your project.
+</p>
+
+<p>
+From my understanding, both of these packages depend on determining the project
+root by using the built-in <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html">project.el</a> package. With no recognized VCS set up,
+project.el is unable to determine the root, and OmniSharp flounders as a result.
+The simplest solution, of course, is to just set up VCS in your project. (You
+ought to be doing this anyway!) But if that is not an option for you, the Emacs
+manual provides <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/EDE.html">guidance on using EDE (Emacs Development Environment) instead</a>,
+but this is quite a heavyweight solution.
+</p>
+
+<p>
+There’s a third option as well: the <code>project-find-functions</code> variable. To use
+this, you essentially create a new project.el “backend” specific to C# projects.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">cl-defmethod</span> <span style="color: #88C0D0;">project-root</span> <span style="color: #B48EAD;">(</span><span style="color: #A3BE8C;">(</span>project <span style="color: #5D80AE;">(</span>head csharp<span style="color: #5D80AE;">)</span><span style="color: #A3BE8C;">)</span><span style="color: #B48EAD;">)</span>
+  <span style="color: #B48EAD;">(</span>cdr project<span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span>
+
+<span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">defun</span> <span style="color: #88C0D0;">my/project-try-csharp</span> <span style="color: #B48EAD;">(</span>dir<span style="color: #B48EAD;">)</span>
+  <span style="color: #B48EAD;">(</span><span style="color: #81A1C1;">if-let</span> <span style="color: #A3BE8C;">(</span><span style="color: #5D80AE;">(</span>root
+            <span style="color: #8FBCBB;">(</span>locate-dominating-file
+             dir <span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">lambda</span> <span style="color: #B48EAD;">(</span>dir<span style="color: #B48EAD;">)</span>
+                   <span style="color: #B48EAD;">(</span>directory-files dir nil <span style="color: #A3BE8C; font-style: italic;">"\\.sln$"</span> t 1<span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span><span style="color: #8FBCBB;">)</span><span style="color: #5D80AE;">)</span><span style="color: #A3BE8C;">)</span>
+      <span style="color: #A3BE8C;">(</span>cons 'csharp root<span style="color: #A3BE8C;">)</span><span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span>
+
+<span style="color: #81A1C1;">(</span>add-hook 'project-find-functions #'my/project-try-csharp<span style="color: #81A1C1;">)</span>
+</pre>
+</div>
+
+<p>
+For more information about project backends, <a href="https://vannilla.org/write/1609258895/article.html">this article</a> is invaluable reading!
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-emacs.html">emacs</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div>]]></description>
+  <category><![CDATA[unity]]></category>
+  <category><![CDATA[emacs]]></category>
+  <category><![CDATA[csharp]]></category>
+  <link>https://eliza.sh/2022-07-31-using-unity-editor-with-emacs-(part-2).html</link>
+  <guid>https://eliza.sh/2022-07-31-using-unity-editor-with-emacs-(part-2).html</guid>
+  <pubDate>Sun, 31 Jul 2022 18:32:00 -0700</pubDate>
+</item>
 <item>
   <title><![CDATA[Using StyleCop with Unity]]></title>
   <description><![CDATA[
@@ -48,17 +139,17 @@ reference to StyleCop.Analyzers to the csproj file to be retrieved via NuGet.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-xml"><span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Project</span> <span style="color: #00d3d0;">Sdk</span>=<span style="color: #79a8ff; font-style: italic;">"Microsoft.NET.Sdk"</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">PackageReference</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"StyleCop.Analyzers"</span> <span style="color: #00d3d0;">Version</span>=<span style="color: #79a8ff; font-style: italic;">"1.2.0-beta.376"</span><span style="color: #e0e6f0;">&gt;</span>
-      <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">IncludeAssets</span><span style="color: #e0e6f0;">&gt;</span>
+<pre class="src src-xml">&lt;<span style="color: #88C0D0;">Project</span> <span style="color: #D8DEE9;">Sdk</span>=<span style="color: #A3BE8C; font-style: italic;">"Microsoft.NET.Sdk"</span>&gt;
+  &lt;<span style="color: #88C0D0;">ItemGroup</span>&gt;
+    &lt;<span style="color: #88C0D0;">PackageReference</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"StyleCop.Analyzers"</span> <span style="color: #D8DEE9;">Version</span>=<span style="color: #A3BE8C; font-style: italic;">"1.2.0-beta.376"</span>&gt;
+      &lt;<span style="color: #88C0D0;">IncludeAssets</span>&gt;
         runtime; build; native; contentfiles; analyzers; buildtransitive
-      <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">IncludeAssets</span><span style="color: #e0e6f0;">&gt;</span>
-      <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">PrivateAssets</span><span style="color: #e0e6f0;">&gt;</span>all<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">PrivateAssets</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">PackageReference</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">AdditionalFiles</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"stylecop.json"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
+      &lt;/<span style="color: #88C0D0;">IncludeAssets</span>&gt;
+      &lt;<span style="color: #88C0D0;">PrivateAssets</span>&gt;all&lt;/<span style="color: #88C0D0;">PrivateAssets</span>&gt;
+    &lt;/<span style="color: #88C0D0;">PackageReference</span>&gt;
+    &lt;<span style="color: #88C0D0;">AdditionalFiles</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"stylecop.json"</span> /&gt;
+  &lt;/<span style="color: #88C0D0;">ItemGroup</span>&gt;
+&lt;/<span style="color: #88C0D0;">Project</span>&gt;
 </pre>
 </div>
 
@@ -89,11 +180,11 @@ following csproj configuration:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-xml"><span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Project</span> <span style="color: #00d3d0;">Sdk</span>=<span style="color: #79a8ff; font-style: italic;">"Microsoft.NET.Sdk"</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Analyzer</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
+<pre class="src src-xml">&lt;<span style="color: #88C0D0;">Project</span> <span style="color: #D8DEE9;">Sdk</span>=<span style="color: #A3BE8C; font-style: italic;">"Microsoft.NET.Sdk"</span>&gt;
+  &lt;<span style="color: #88C0D0;">ItemGroup</span>&gt;
+    &lt;<span style="color: #88C0D0;">Analyzer</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> /&gt;
+  &lt;/<span style="color: #88C0D0;">ItemGroup</span>&gt;
+&lt;/<span style="color: #88C0D0;">Project</span>&gt;
 </pre>
 </div>
 
@@ -108,9 +199,9 @@ documented <a href="https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/ma
 </p>
 
 <div class="org-src-container">
-<pre class="src src-json"><span style="color: #ffffff;">{</span>
-  <span style="color: #b6a0ff;">"$schema"</span>: <span style="color: #79a8ff; font-style: italic;">"https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json"</span>
-<span style="color: #ffffff;">}</span>
+<pre class="src src-json"><span style="color: #81A1C1;">{</span>
+  <span style="color: #81A1C1;">"$schema"</span>: <span style="color: #A3BE8C; font-style: italic;">"https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json"</span>
+<span style="color: #81A1C1;">}</span>
 </pre>
 </div>
 
@@ -148,12 +239,12 @@ the above configuration changes.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-xml"><span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Analyzer</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">AdditionalFiles</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"stylecop.json"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
+<pre class="src src-xml">&lt;<span style="color: #88C0D0;">Project</span>&gt;
+  &lt;<span style="color: #88C0D0;">ItemGroup</span>&gt;
+    &lt;<span style="color: #88C0D0;">Analyzer</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> /&gt;
+    &lt;<span style="color: #88C0D0;">AdditionalFiles</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"stylecop.json"</span> /&gt;
+  &lt;/<span style="color: #88C0D0;">ItemGroup</span>&gt;
+&lt;/<span style="color: #88C0D0;">Project</span>&gt;
 </pre>
 </div>
 
@@ -169,11 +260,11 @@ projects/Directory.Build.props:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-json"><span style="color: #ffffff;">{</span>
-  <span style="color: #b6a0ff;">"RoslynExtensionsOptions"</span>: <span style="color: #ff62d4;">{</span>
-    <span style="color: #b6a0ff;">"enableAnalyzersSupport"</span>: <span style="color: #00bcff;">true</span>
-  <span style="color: #ff62d4;">}</span>
-<span style="color: #ffffff;">}</span>
+<pre class="src src-json"><span style="color: #81A1C1;">{</span>
+  <span style="color: #81A1C1;">"RoslynExtensionsOptions"</span>: <span style="color: #B48EAD;">{</span>
+    <span style="color: #81A1C1;">"enableAnalyzersSupport"</span>: <span style="color: #81A1C1;">true</span>
+  <span style="color: #B48EAD;">}</span>
+<span style="color: #81A1C1;">}</span>
 </pre>
 </div>
 </div>
@@ -197,11 +288,11 @@ files:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-json"><span style="color: #ffffff;">{</span>
-  <span style="color: #b6a0ff;">"FormattingOptions"</span>: <span style="color: #ff62d4;">{</span>
-    <span style="color: #b6a0ff;">"enableEditorConfigSupport"</span>: <span style="color: #00bcff;">true</span>
-  <span style="color: #ff62d4;">}</span>
-<span style="color: #ffffff;">}</span>
+<pre class="src src-json"><span style="color: #81A1C1;">{</span>
+  <span style="color: #81A1C1;">"FormattingOptions"</span>: <span style="color: #B48EAD;">{</span>
+    <span style="color: #81A1C1;">"enableEditorConfigSupport"</span>: <span style="color: #81A1C1;">true</span>
+  <span style="color: #B48EAD;">}</span>
+<span style="color: #81A1C1;">}</span>
 </pre>
 </div>
 
@@ -211,29 +302,29 @@ directory.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-conf"><span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">Remove the line below if you want to inherit</span>
-<span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">.editorconfig settings from higher directories</span>
-<span style="color: #00d3d0;">root</span> = true
+<pre class="src src-conf"><span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">Remove the line below if you want to inherit</span>
+<span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">.editorconfig settings from higher directories</span>
+<span style="color: #D8DEE9;">root</span> = true
 
-<span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">C# files</span>
-[<span style="color: #6ae4b9;">*.cs</span>]
+<span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">C# files</span>
+[<span style="color: #8FBCBB;">*.cs</span>]
 
-<span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">EXAMPLE: Disable all naming convention analyzers.</span>
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1300.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1301.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1302.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1303.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1304.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1305.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1306.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1307.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1308.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1309.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1310.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1311.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1312.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1313.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1314.severity</span> = none
+<span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">EXAMPLE: Disable all naming convention analyzers.</span>
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1300.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1301.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1302.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1303.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1304.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1305.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1306.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1307.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1308.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1309.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1310.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1311.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1312.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1313.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1314.severity</span> = none
 </pre>
 </div>
 
@@ -262,6 +353,11 @@ tooling that hopefully will improve in the future.
 <item>
   <title><![CDATA[Using Unity Editor with Emacs]]></title>
   <description><![CDATA[
+<p>
+<i>Update <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-07-31 Sun&gt;</span></span>: I have made a follow-up post <a href="https://eliza.sh/2022-07-31-using-unity-editor-with-emacs-(part-2).html">here</a> with more up-to-date
+information.</i>
+</p>
+
 <p>
 Let's skip right to the core of the issue: Unity is designed with the
 expectation that you are using Visual Studio or Visual Studio Code for editing
@@ -311,7 +407,7 @@ Editor Args" field is set to the following:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">emacsclient -n +$<span style="color: #ffffff;">(</span>Line<span style="color: #ffffff;">)</span>:$<span style="color: #ffffff;">(</span>Column<span style="color: #ffffff;">)</span> $<span style="color: #ffffff;">(</span>File<span style="color: #ffffff;">)</span>
+<pre class="src src-shell">emacsclient -n +$<span style="color: #81A1C1;">(</span>Line<span style="color: #81A1C1;">)</span>:$<span style="color: #81A1C1;">(</span>Column<span style="color: #81A1C1;">)</span> $<span style="color: #81A1C1;">(</span>File<span style="color: #81A1C1;">)</span>
 </pre>
 </div>
 
@@ -366,7 +462,7 @@ set it in my <code>init.el</code>.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span>setenv <span style="color: #79a8ff; font-style: italic;">"FrameworkPathOverride"</span> <span style="color: #79a8ff; font-style: italic;">"/lib/mono/4.5"</span><span style="color: #ffffff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #81A1C1;">(</span>setenv <span style="color: #A3BE8C; font-style: italic;">"FrameworkPathOverride"</span> <span style="color: #A3BE8C; font-style: italic;">"/lib/mono/4.5"</span><span style="color: #81A1C1;">)</span>
 </pre>
 </div>
 
@@ -385,20 +481,20 @@ The actual elisp configuration is shockingly simple. (Note: I rely on use
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp"><span style="color: #ffffff;">(</span><span style="color: #b6a0ff;">use-package</span> <span style="color: #00bcff;">lsp-mode</span>
-  <span style="color: #f78fe7;">:ensure</span> t
-  <span style="color: #f78fe7;">:bind-keymap</span>
-  <span style="color: #ff62d4;">(</span><span style="color: #79a8ff; font-style: italic;">"C-c l"</span> . lsp-command-map<span style="color: #ff62d4;">)</span>
-  <span style="color: #f78fe7;">:custom</span>
-  <span style="color: #ff62d4;">(</span>lsp-keymap-prefix <span style="color: #79a8ff; font-style: italic;">"C-c l"</span><span style="color: #ff62d4;">)</span><span style="color: #ffffff;">)</span>
+<pre class="src src-emacs-lisp"><span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">use-package</span> <span style="color: #81A1C1;">lsp-mode</span>
+  <span style="color: #81A1C1;">:ensure</span> t
+  <span style="color: #81A1C1;">:bind-keymap</span>
+  <span style="color: #B48EAD;">(</span><span style="color: #A3BE8C; font-style: italic;">"C-c l"</span> . lsp-command-map<span style="color: #B48EAD;">)</span>
+  <span style="color: #81A1C1;">:custom</span>
+  <span style="color: #B48EAD;">(</span>lsp-keymap-prefix <span style="color: #A3BE8C; font-style: italic;">"C-c l"</span><span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span>
 
-<span style="color: #ffffff;">(</span><span style="color: #b6a0ff;">use-package</span> <span style="color: #00bcff;">csharp-mode</span>
-  <span style="color: #f78fe7;">:ensure</span> t
-  <span style="color: #f78fe7;">:init</span>
-  <span style="color: #ff62d4;">(</span><span style="color: #b6a0ff;">defun</span> <span style="color: #feacd0;">my/csharp-mode-hook</span> <span style="color: #3fdfd0;">()</span>
-    <span style="color: #3fdfd0;">(</span><span style="color: #b6a0ff;">setq-local</span> lsp-auto-guess-root t<span style="color: #3fdfd0;">)</span>
-    <span style="color: #3fdfd0;">(</span>lsp<span style="color: #3fdfd0;">)</span><span style="color: #ff62d4;">)</span>
-  <span style="color: #ff62d4;">(</span>add-hook 'csharp-mode-hook #'my/csharp-mode-hook<span style="color: #ff62d4;">)</span><span style="color: #ffffff;">)</span>
+<span style="color: #81A1C1;">(</span><span style="color: #81A1C1;">use-package</span> <span style="color: #81A1C1;">csharp-mode</span>
+  <span style="color: #81A1C1;">:ensure</span> t
+  <span style="color: #81A1C1;">:init</span>
+  <span style="color: #B48EAD;">(</span><span style="color: #81A1C1;">defun</span> <span style="color: #88C0D0;">my/csharp-mode-hook</span> <span style="color: #A3BE8C;">()</span>
+    <span style="color: #A3BE8C;">(</span><span style="color: #81A1C1;">setq-local</span> lsp-auto-guess-root t<span style="color: #A3BE8C;">)</span>
+    <span style="color: #A3BE8C;">(</span>lsp<span style="color: #A3BE8C;">)</span><span style="color: #B48EAD;">)</span>
+  <span style="color: #B48EAD;">(</span>add-hook 'csharp-mode-hook #'my/csharp-mode-hook<span style="color: #B48EAD;">)</span><span style="color: #81A1C1;">)</span>
 </pre>
 </div>
 
@@ -426,7 +522,7 @@ serialization and native elisp compilation. See <a href="https://www.masteringem
   <category><![CDATA[csharp]]></category>
   <link>https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html</link>
   <guid>https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html</guid>
-  <pubDate>Tue, 01 Jun 2021 00:00:00 -0700</pubDate>
+  <pubDate>Mon, 31 May 2021 17:00:00 -0700</pubDate>
 </item>
 </channel>
 </rss>

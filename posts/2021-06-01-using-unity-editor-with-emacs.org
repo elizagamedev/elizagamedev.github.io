@@ -3,6 +3,9 @@
 #+description: How to configure the Unity game engine editor to integrate with Emacs
 #+filetags: unity emacs csharp
 
+/Update <2022-07-31 Sun>: I have made a follow-up post [[https://eliza.sh/2022-07-31-using-unity-editor-with-emacs-(part-2).html][here]] with more up-to-date
+information./
+
 Let's skip right to the core of the issue: Unity is designed with the
 expectation that you are using Visual Studio or Visual Studio Code for editing
 C#, and using alternative editors with features such as LSP gets a bit tricky.

@@ -1,0 +1,68 @@
+#+title: Using Unity Editor With Emacs (Part 2)
+#+date: <2022-07-31 18:32>
+#+description: How to configure the Unity game engine editor to integrate with Emacs
+#+filetags: unity emacs csharp
+
+A while ago, I wrote an [[https://eliza.sh/2021-06-01-using-unity-editor-with-emacs.html][article about using Unity with Emacs]]. While this article
+is still useful, I have encountered a few more issues with Unity, and learned
+better ways to deal with its unique demands. It is written with the assumption
+that you have already read the aforementioned article.
+
+* A new "solution" solution: The Rider plugin
+:PROPERTIES:
+:CUSTOM_ID: org-aab9db34-214d-4f75-ab72-3f928a9eb86a
+:END:
+I previously mentioned an issue with the Visual Studio Code “emulation” method
+of Emacs integration: having to set ~FrameworkPathOverride~ due to some mono
+environment weirdness. There are additional problems with the VS Code support
+package: the [[https://docs.microsoft.com/sr-cyrl-rs/dotnet/csharp/language-reference/compiler-options/miscellaneous][csc.rsp]] file is not taken into account when generating the project
+build options, meaning that if you want to, for example, [[https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/language#nullable][enable C# 8 nullable
+reference types]], OmniSharp will not pick up these options and loudly complain.
+
+The JetBrains Rider IDE support package generates solution and project files
+which makes these problems disappear. Unfortunately, it’s not sufficient enough
+to make a simple shim which execs its command line arguments as in the solution
+described in the previous article; if Unity thinks it’s using Rider, it will
+invoke the binary using hardcoded command-line options. This unfortunately
+necessitated the creation of a slightly less trivial tool: [[https://github.com/elizagamedev/rider2emacs][rider2emacs]]. This is
+a simple Rust tool which translates command-line arguments from Rider to
+emacsclient. The latest version of [[https://github.com/elizagamedev/unity.el][unity.el]] advises this approach instead of
+using the ~code~ shim.
+
+* Issues with ~lsp-mode~ finding the project root
+:PROPERTIES:
+:CUSTOM_ID: org-85064b54-de87-4aed-b752-c5d7c1e92f5d
+:END:
+Even if you followed the instructions down to the letter in my previous blog
+post, you may have run into an issue where LSP still doesn’t work properly. One
+potential culprit is that ~lsp-mode~ did not correctly guess the root of the
+project, even with ~lsp-auto-guess-root~ enabled; the same might happen if you
+use [[https://github.com/joaotavora/eglot][eglot]] instead. This will likely happen if you aren’t using Git or some other
+VCS in your project.
+
+From my understanding, both of these packages depend on determining the project
+root by using the built-in [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html][project.el]] package. With no recognized VCS set up,
+project.el is unable to determine the root, and OmniSharp flounders as a result.
+The simplest solution, of course, is to just set up VCS in your project. (You
+ought to be doing this anyway!) But if that is not an option for you, the Emacs
+manual provides [[https://www.gnu.org/software/emacs/manual/html_node/emacs/EDE.html][guidance on using EDE (Emacs Development Environment) instead]],
+but this is quite a heavyweight solution.
+
+There’s a third option as well: the ~project-find-functions~ variable. To use
+this, you essentially create a new project.el “backend” specific to C# projects.
+
+#+begin_src emacs-lisp
+  (cl-defmethod project-root ((project (head csharp)))
+    (cdr project))
+
+  (defun my/project-try-csharp (dir)
+    (if-let ((root
+              (locate-dominating-file
+               dir (lambda (dir)
+                     (directory-files dir nil "\\.sln$" t 1)))))
+        (cons 'csharp root)))
+
+  (add-hook 'project-find-functions #'my/project-try-csharp)
+#+end_src
+
+For more information about project backends, [[https://vannilla.org/write/1609258895/article.html][this article]] is invaluable reading!

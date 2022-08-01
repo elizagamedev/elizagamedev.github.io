@@ -1,10 +1,10 @@
-/* This color scheme is based on Modus Vivendi. */
+/* This color scheme is based on doom-nord. */
 
 body {
   font-family: sans-serif;
   font-size: 13pt;
-  background-color: #000000; /* bg-main */
-  color: #ffffff; /* fg-main */
+  background-color: #2E3440; /* bg */
+  color: #ECEFF4; /* fg */
 }
 
 #content {
@@ -14,29 +14,18 @@ body {
 }
 
 /* Links. */
-a {
-  color: inherit;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: white;
-  text-decoration: inherit;
-  background: #10387c; /* blue-subtle-bg */
-}
-
-p a,
-.header a,
-#archive a {
-  color: #00bcff; /* blue-alt-other */
+a,
+a:visited {
+  color: #81A1C1;
   text-decoration: underline;
 }
 
-p a:visited,
-.header a,
-#archive a:visited {
-  color: #b6a0ff; /* magenta-alt-other */
+a:hover {
+  color: #2E3440; /* bg */
+  text-decoration: none;
+  background: #81A1C1; /* blue */
 }
+
 
 /* Before content. */
 .header {
@@ -46,19 +35,22 @@ p a:visited,
 }
 
 /* The page title. */
-h1 {
-  color: #feacd0; /* magenta */
+h1,
+h1 a,
+h1 a:visited {
+  color: #EBCB8B;
   font-weight: lighter;
   font-size: 40pt;
   text-align: center;
   margin: 0;
+  text-decoration: none;
 }
 
 h1::after {
   font-family: monospace;
   content: "===";
   display: block;
-  color: #a8a8a8; /* fg-alt */
+  color: #434C5E;
   font-size: 30pt;
   text-align: center;
   letter-spacing: 0.5em;
@@ -72,7 +64,7 @@ h2.post-title {
 
 div.post-date {
   margin: 1rem 0 0 0;
-  color: #a8a8a8; /* fg-alt */
+  color: #A8A8A8;
   font-size: 12pt;
 }
 
@@ -83,12 +75,12 @@ h4,
 h5,
 h6 {
   font-family: monospace;
-  font-weight: normal;
+  font-weight: bold;
   margin: 2rem 0 0.5rem 0;
 }
 
 h2 {
-  color: #ffffff; /* fg-main */
+  color: #81A1C1;
   font-size: 22pt;
 }
 
@@ -98,7 +90,7 @@ h2::before {
 }
 
 h3 {
-  color: #f8dec0; /* fg-special-warm */
+  color: #B48EAD;
   font-size: 17pt;
 }
 
@@ -108,7 +100,7 @@ h3::before {
 }
 
 h4 {
-  color: #c6eaff; /* fg-special-cold */
+  color: #5D80AE; /* fg-special-cold */
   font-size: 15pt;
 }
 
@@ -118,7 +110,7 @@ h4::before {
 }
 
 h5 {
-  color: #bfebe0; /* fg-special-mild */
+  color: #A0B8D0;
   font-size: inherit;
 }
 
@@ -128,7 +120,7 @@ h5::before {
 }
 
 h6 {
-  color: #fbd6f4; /* fg-special-calm */
+  color: #C6AAC1;
   font-size: 11pt;
 }
 
@@ -145,13 +137,13 @@ p {
 
 p code {
   font-family: monospace;
-  color: #fbd6f4; /* fg-special-calm */
-  background-color: #191a1b; /* bg-alt */
+  color: #D08770;
+  background-color: #373E4C;
 }
 
 pre {
   font-family: monospace;
-  background-color: #191a1b; /* bg-alt */
+  background-color: #373E4C;
   margin: 1rem 2rem;
   padding: 0.5rem;
   overflow-x: auto;
@@ -160,7 +152,6 @@ pre {
 /* After content. */
 .taglist {
   font-family: monospace;
-  color: #a8a8a8; /* fg-alt */
   font-size: 11pt;
   margin: 1rem 0 2rem 0;
 }
@@ -168,4 +159,12 @@ pre {
 #archive {
   font-size: 12pt;
   text-align: center;
+  margin: 1rem 0 2rem 0;
+}
+
+#postamble {
+  font-size: 11pt;
+  text-align: center;
+  font-style: italic;
+  color: #A8A8A8;
 }

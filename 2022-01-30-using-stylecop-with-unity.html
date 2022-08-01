@@ -62,17 +62,17 @@ reference to StyleCop.Analyzers to the csproj file to be retrieved via NuGet.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-xml"><span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Project</span> <span style="color: #00d3d0;">Sdk</span>=<span style="color: #79a8ff; font-style: italic;">"Microsoft.NET.Sdk"</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">PackageReference</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"StyleCop.Analyzers"</span> <span style="color: #00d3d0;">Version</span>=<span style="color: #79a8ff; font-style: italic;">"1.2.0-beta.376"</span><span style="color: #e0e6f0;">&gt;</span>
-      <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">IncludeAssets</span><span style="color: #e0e6f0;">&gt;</span>
+<pre class="src src-xml">&lt;<span style="color: #88C0D0;">Project</span> <span style="color: #D8DEE9;">Sdk</span>=<span style="color: #A3BE8C; font-style: italic;">"Microsoft.NET.Sdk"</span>&gt;
+  &lt;<span style="color: #88C0D0;">ItemGroup</span>&gt;
+    &lt;<span style="color: #88C0D0;">PackageReference</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"StyleCop.Analyzers"</span> <span style="color: #D8DEE9;">Version</span>=<span style="color: #A3BE8C; font-style: italic;">"1.2.0-beta.376"</span>&gt;
+      &lt;<span style="color: #88C0D0;">IncludeAssets</span>&gt;
         runtime; build; native; contentfiles; analyzers; buildtransitive
-      <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">IncludeAssets</span><span style="color: #e0e6f0;">&gt;</span>
-      <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">PrivateAssets</span><span style="color: #e0e6f0;">&gt;</span>all<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">PrivateAssets</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">PackageReference</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">AdditionalFiles</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"stylecop.json"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
+      &lt;/<span style="color: #88C0D0;">IncludeAssets</span>&gt;
+      &lt;<span style="color: #88C0D0;">PrivateAssets</span>&gt;all&lt;/<span style="color: #88C0D0;">PrivateAssets</span>&gt;
+    &lt;/<span style="color: #88C0D0;">PackageReference</span>&gt;
+    &lt;<span style="color: #88C0D0;">AdditionalFiles</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"stylecop.json"</span> /&gt;
+  &lt;/<span style="color: #88C0D0;">ItemGroup</span>&gt;
+&lt;/<span style="color: #88C0D0;">Project</span>&gt;
 </pre>
 </div>
 
@@ -103,11 +103,11 @@ following csproj configuration:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-xml"><span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Project</span> <span style="color: #00d3d0;">Sdk</span>=<span style="color: #79a8ff; font-style: italic;">"Microsoft.NET.Sdk"</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Analyzer</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
+<pre class="src src-xml">&lt;<span style="color: #88C0D0;">Project</span> <span style="color: #D8DEE9;">Sdk</span>=<span style="color: #A3BE8C; font-style: italic;">"Microsoft.NET.Sdk"</span>&gt;
+  &lt;<span style="color: #88C0D0;">ItemGroup</span>&gt;
+    &lt;<span style="color: #88C0D0;">Analyzer</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> /&gt;
+  &lt;/<span style="color: #88C0D0;">ItemGroup</span>&gt;
+&lt;/<span style="color: #88C0D0;">Project</span>&gt;
 </pre>
 </div>
 
@@ -122,9 +122,9 @@ documented <a href="https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/ma
 </p>
 
 <div class="org-src-container">
-<pre class="src src-json"><span style="color: #ffffff;">{</span>
-  <span style="color: #b6a0ff;">"$schema"</span>: <span style="color: #79a8ff; font-style: italic;">"https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json"</span>
-<span style="color: #ffffff;">}</span>
+<pre class="src src-json"><span style="color: #81A1C1;">{</span>
+  <span style="color: #81A1C1;">"$schema"</span>: <span style="color: #A3BE8C; font-style: italic;">"https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json"</span>
+<span style="color: #81A1C1;">}</span>
 </pre>
 </div>
 
@@ -162,12 +162,12 @@ the above configuration changes.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-xml"><span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">Analyzer</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-    <span style="color: #e0e6f0;">&lt;</span><span style="color: #feacd0;">AdditionalFiles</span> <span style="color: #00d3d0;">Include</span>=<span style="color: #79a8ff; font-style: italic;">"stylecop.json"</span> <span style="color: #e0e6f0;">/</span><span style="color: #e0e6f0;">&gt;</span>
-  <span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">ItemGroup</span><span style="color: #e0e6f0;">&gt;</span>
-<span style="color: #e0e6f0;">&lt;</span><span style="color: #e0e6f0;">/</span><span style="color: #feacd0;">Project</span><span style="color: #e0e6f0;">&gt;</span>
+<pre class="src src-xml">&lt;<span style="color: #88C0D0;">Project</span>&gt;
+  &lt;<span style="color: #88C0D0;">ItemGroup</span>&gt;
+    &lt;<span style="color: #88C0D0;">Analyzer</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"StyleCop/StyleCop.Analyzers.dll"</span> /&gt;
+    &lt;<span style="color: #88C0D0;">AdditionalFiles</span> <span style="color: #D8DEE9;">Include</span>=<span style="color: #A3BE8C; font-style: italic;">"stylecop.json"</span> /&gt;
+  &lt;/<span style="color: #88C0D0;">ItemGroup</span>&gt;
+&lt;/<span style="color: #88C0D0;">Project</span>&gt;
 </pre>
 </div>
 
@@ -183,11 +183,11 @@ projects/Directory.Build.props:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-json"><span style="color: #ffffff;">{</span>
-  <span style="color: #b6a0ff;">"RoslynExtensionsOptions"</span>: <span style="color: #ff62d4;">{</span>
-    <span style="color: #b6a0ff;">"enableAnalyzersSupport"</span>: <span style="color: #00bcff;">true</span>
-  <span style="color: #ff62d4;">}</span>
-<span style="color: #ffffff;">}</span>
+<pre class="src src-json"><span style="color: #81A1C1;">{</span>
+  <span style="color: #81A1C1;">"RoslynExtensionsOptions"</span>: <span style="color: #B48EAD;">{</span>
+    <span style="color: #81A1C1;">"enableAnalyzersSupport"</span>: <span style="color: #81A1C1;">true</span>
+  <span style="color: #B48EAD;">}</span>
+<span style="color: #81A1C1;">}</span>
 </pre>
 </div>
 </div>
@@ -211,11 +211,11 @@ files:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-json"><span style="color: #ffffff;">{</span>
-  <span style="color: #b6a0ff;">"FormattingOptions"</span>: <span style="color: #ff62d4;">{</span>
-    <span style="color: #b6a0ff;">"enableEditorConfigSupport"</span>: <span style="color: #00bcff;">true</span>
-  <span style="color: #ff62d4;">}</span>
-<span style="color: #ffffff;">}</span>
+<pre class="src src-json"><span style="color: #81A1C1;">{</span>
+  <span style="color: #81A1C1;">"FormattingOptions"</span>: <span style="color: #B48EAD;">{</span>
+    <span style="color: #81A1C1;">"enableEditorConfigSupport"</span>: <span style="color: #81A1C1;">true</span>
+  <span style="color: #B48EAD;">}</span>
+<span style="color: #81A1C1;">}</span>
 </pre>
 </div>
 
@@ -225,29 +225,29 @@ directory.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-conf"><span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">Remove the line below if you want to inherit</span>
-<span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">.editorconfig settings from higher directories</span>
-<span style="color: #00d3d0;">root</span> = true
+<pre class="src src-conf"><span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">Remove the line below if you want to inherit</span>
+<span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">.editorconfig settings from higher directories</span>
+<span style="color: #D8DEE9;">root</span> = true
 
-<span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">C# files</span>
-[<span style="color: #6ae4b9;">*.cs</span>]
+<span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">C# files</span>
+[<span style="color: #8FBCBB;">*.cs</span>]
 
-<span style="color: #a8a8a8; font-style: italic;"># </span><span style="color: #a8a8a8; font-style: italic;">EXAMPLE: Disable all naming convention analyzers.</span>
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1300.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1301.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1302.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1303.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1304.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1305.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1306.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1307.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1308.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1309.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1310.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1311.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1312.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1313.severity</span> = none
-<span style="color: #00d3d0;">dotnet_diagnostic.SA1314.severity</span> = none
+<span style="color: #6f7787; font-style: italic;"># </span><span style="color: #6f7787; font-style: italic;">EXAMPLE: Disable all naming convention analyzers.</span>
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1300.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1301.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1302.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1303.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1304.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1305.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1306.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1307.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1308.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1309.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1310.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1311.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1312.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1313.severity</span> = none
+<span style="color: #D8DEE9;">dotnet_diagnostic.SA1314.severity</span> = none
 </pre>
 </div>
 
@@ -267,6 +267,6 @@ tooling that hopefully will improve in the future.
 </div>
 </div>
 <div class="taglist"><a href="https://eliza.sh/tags.html">Tags</a>: <a href="https://eliza.sh/tag-unity.html">unity</a> <a href="https://eliza.sh/tag-csharp.html">csharp</a> </div></div>
-<div id="postamble" class="status"></div>
+<div id="postamble" class="status">If you have feedback for this blog, please <a href="https://github.com/elizagamedev/elizagamedev.github.io/issues">create an issue here</a>.</div>
 </body>
 </html>
